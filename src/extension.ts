@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
+let outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
+
 export function activate(context: vscode.ExtensionContext) {
     let enableDisposable = vscode.commands.registerCommand('herd-xdebug-toggler.enableXdebug', async () => {
 		// Get the PHP versions from the configuration file
@@ -68,10 +70,11 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('Successfully enabled Xdebug extension');
 
 				const { exec } = require('child_process');
-				let outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
-
+				
 				exec('herd restart', (error: any, stdout: any, stderr: any) => {
-					outputChannel.appendLine('Herd Xdebug Toggler -- Restarting Herd');
+					let timestamp = new Date().toISOString();
+
+					outputChannel.appendLine('Herd Xdebug Toggler -- Restarting Herd @ ' + timestamp);
 
 					if (error) {
 						outputChannel.appendLine(`Execution error: ${error}`);
@@ -143,10 +146,11 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('Successfully disabled Xdebug extension');
 
 				const { exec } = require('child_process');
-				let outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
 
 				exec('herd restart', (error: any, stdout: any, stderr: any) => {
-					outputChannel.appendLine('Herd Xdebug Toggler -- Restarting Herd');
+					let timestamp = new Date().toISOString();
+
+					outputChannel.appendLine('Herd Xdebug Toggler -- Restarting Herd @ ' + timestamp);
 
 					if (error) {
 						outputChannel.appendLine(`Execution error: ${error}`);
