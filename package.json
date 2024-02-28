@@ -2,7 +2,9 @@
   "name": "herd-xdebug-toggler",
   "displayName": "Herd Xdebug Toggler",
   "description": "Enable or disable Xdebug extention for Herd",
-  "version": "0.1.0",
+  "publisher": "Patrick Levesque",
+  "version": "1.0.1",
+  "icon": "herd-xdebug-toggler.png",
   "engines": {
     "vscode": "^1.86.0"
   },
