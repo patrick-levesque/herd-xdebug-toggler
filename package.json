@@ -17,11 +17,11 @@
     "commands": [
       {
         "command": "herd-xdebug-toggler.enableXdebug",
-        "title": "Enable XDebug"
+        "title": "Enable Xdebug"
       },
       {
         "command": "herd-xdebug-toggler.disableXdebug",
-        "title": "Disable XDebug"
+        "title": "Disable Xdebug"
       }
     ],
     "configuration": {
@@ -30,7 +30,7 @@
           "herdXdebugToggler.phpVersions": {
               "type": "array",
               "default": ["7.4", "8.0", "8.1", "8.2", "8.3"],
-              "description": "PHP versions to display when enabling or disabling XDebug"
+              "description": "PHP versions to display when enabling or disabling Xdebug"
           }
       }
     }

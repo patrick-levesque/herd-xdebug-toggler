@@ -1,14 +1,14 @@
-# Herd XDebug Toggler README
+# Herd Xdebug Toggler README
 
 Herd Xdebug toggler extension for VS Code.
 
 ## Features
 
-Allows to easily enable/disable XDebug extension in any PHP installed version.
+Allows to easily enable/disable Xdebug extension in any PHP installed version.
 
 ## Requirements
 
-You need to manually add other XDebug options in your php.ini files as required. This extension will only enable or disable XDebug.
+You need to manually add other Xdebug options in your php.ini files as required. This extension will only enable or disable Xdebug.
 
 ## Extension Settings
 
