@@ -68,15 +68,16 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('Successfully enabled Xdebug extension');
 
 				const { exec } = require('child_process');
+				let outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
 
 				exec('herd restart', (error: any, stdout: any, stderr: any) => {
-					console.log('Herd Xdebug Toggler -- Restarting Herd');
+					outputChannel.appendLine('Herd Xdebug Toggler -- Restarting Herd');
 
 					if (error) {
-						console.error(`Execution error: ${error}`);
+						outputChannel.appendLine(`Execution error: ${error}`);
 						return;
 					} else {
-						console.log(stdout);
+						outputChannel.appendLine(stdout);
 					}
 				});
             });
@@ -141,17 +142,17 @@ export function activate(context: vscode.ExtensionContext) {
 
                 vscode.window.showInformationMessage('Successfully disabled Xdebug extension');
 
-
 				const { exec } = require('child_process');
+				let outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
 
 				exec('herd restart', (error: any, stdout: any, stderr: any) => {
-					console.log('Herd Xdebug Toggler -- Restarting Herd');
+					outputChannel.appendLine('Herd Xdebug Toggler -- Restarting Herd');
 
 					if (error) {
-						console.error(`Execution error: ${error}`);
+						outputChannel.appendLine(`Execution error: ${error}`);
 						return;
 					} else {
-						console.log(stdout);
+						outputChannel.appendLine(stdout);
 					}
 				});
             });
