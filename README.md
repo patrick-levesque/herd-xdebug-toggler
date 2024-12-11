@@ -5,6 +5,7 @@ Herd Xdebug toggler extension for Visual Studio Code.
 ## Features
 
 - Allows to easily enable/disable Xdebug extension for any installed PHP version.
+- Automatically detects breakpoints changes and enable/disable Xdebug extension for all PHP versions in settings.
 - Restart Herd services when required.
 
 ## Requirements
@@ -18,6 +19,7 @@ By default, the dropdown menu offers PHP versions 7.4, 8.0, 8.1, 8.2, and 8.3. H
 ```json
 "herdXdebugToggler.phpVersions": [
     "8.2",
-    "8.3"
+    "8.3",
+    "8.4"
 ],
 ```
