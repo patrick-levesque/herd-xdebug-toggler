@@ -2,11 +2,15 @@
   "name": "herd-xdebug-toggler",
   "displayName": "Herd Xdebug Toggler",
   "description": "Enable or disable Xdebug extention for Herd",
-  "publisher": "Patrick Levesque",
-  "version": "1.0.1",
+  "publisher": "patrick-levesque",
+  "author": {
+    "name": "Patrick Levesque",
+    "email": "patrick@paralel.ca"
+  },
+  "version": "1.1.0",
   "icon": "herd-xdebug-toggler.png",
   "engines": {
-    "vscode": "^1.86.0"
+    "vscode": "^1.95.0"
   },
   "categories": [
     "Other"
@@ -31,11 +35,17 @@
     "configuration": {
       "title": "Herd Xdebug Toggler",
       "properties": {
-          "herdXdebugToggler.phpVersions": {
-              "type": "array",
-              "default": ["7.4", "8.0", "8.1", "8.2", "8.3"],
-              "description": "PHP versions to display when enabling or disabling Xdebug"
-          }
+        "herdXdebugToggler.phpVersions": {
+          "type": "array",
+          "default": [
+            "7.4",
+            "8.0",
+            "8.1",
+            "8.2",
+            "8.3"
+          ],
+          "description": "PHP versions to display when enabling or disabling Xdebug"
+        }
       }
     }
   },
