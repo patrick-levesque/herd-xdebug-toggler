@@ -1,24 +1,34 @@
 {
   "name": "herd-xdebug-toggler",
-  "displayName": "Herd Xdebug Toggler",
-  "description": "Enable or disable Xdebug extention for Herd",
   "publisher": "patrick-levesque",
-  "author": {
-    "name": "Patrick Levesque",
-    "email": "patrick@paralel.ca"
-  },
+  "displayName": "Herd Xdebug Toggler",
+  "description": "Enable or disable Xdebug extention for Laravel Herd",
+  "icon": "images/herd-xdebug-toggler.png",
   "version": "1.1.0",
-  "icon": "herd-xdebug-toggler.png",
+  "author": "Patrick Levesque",
+  "license": "MIT",
+  "galleryBanner": {
+    "color": "#100f11",
+    "theme": "dark"
+  },
+  "repository": "github:patrick-levesque/herd-xdebug-toggler",
+  "categories": [
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "debug",
+    "herd",
+    "laravel",
+    "php",
+    "xdebug"
+  ],
   "engines": {
     "vscode": "^1.95.0"
   },
-  "categories": [
-    "Other"
-  ],
   "activationEvents": [
     "onStartupFinished",
-    "onLanguage:php",
-    "workspaceContains:composer.json"
+    "workspaceContains:**/artisan"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -42,9 +52,15 @@
             "8.0",
             "8.1",
             "8.2",
-            "8.3"
+            "8.3",
+            "8.4"
           ],
-          "description": "PHP versions to display when enabling or disabling Xdebug"
+          "description": "PHP versions to update when enabling or disabling Xdebug"
+        },
+        "herdXdebugToggler.breakpointDetection": {
+          "type": "boolean",
+          "description": "Automatically enable or disable Xdebug when a breakpoint is set or removed",
+          "default": true
         }
       }
     }
@@ -54,7 +70,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
+    "lint": "eslint src",
     "test": "vscode-test"
   },
   "devDependencies": {
