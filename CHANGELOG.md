@@ -1,3 +1,10 @@
+### 1.1.1 - 2024-12-12
+- Use current project PHP version instead of an array of PHP versions
+- Automatically checks if Xdebug is already enabled
+- Update commands to enable/disable Xdebug for the current project only
+- Removed PHP versions array in Settings
+- Refactor and cleanup code
+
 ### 1.1.0 - 2024-12-11
 - Add automatic enable/disable on breakpoints changes
 - Update and cleanup code
