@@ -7,7 +7,7 @@ let homeDir = os.homedir();
 let outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
 
 function activate(context: vscode.ExtensionContext) {
-    let enableDisposable = vscode.commands.registerCommand('herd-xdebug-toggler.enableXdebug', async () => {
+    let enableXdebugCommand = vscode.commands.registerCommand('herd-xdebug-toggler.enableXdebug', async () => {
 		// Get the PHP versions from the configuration file
 		let config = vscode.workspace.getConfiguration('herdXdebugToggler');
 		let phpVersions = config.get('phpVersions');
@@ -80,7 +80,7 @@ function activate(context: vscode.ExtensionContext) {
         });
     });
 
-    let disableDisposable = vscode.commands.registerCommand('herd-xdebug-toggler.disableXdebug', async () => {
+    let disableXdebugCommand = vscode.commands.registerCommand('herd-xdebug-toggler.disableXdebug', async () => {
 		// Get the PHP versions from the configuration file
 		let config = vscode.workspace.getConfiguration('herdXdebugToggler');
 		let phpVersions = config.get('phpVersions');
@@ -152,8 +152,15 @@ function activate(context: vscode.ExtensionContext) {
 
 	// Function to check PHP breakpoints
     const checkPhpBreakpoints = () => {
-		// Get the PHP versions from the configuration file
 		let config = vscode.workspace.getConfiguration('herdXdebugToggler');
+
+		// Check if breakpoint detection is enabled
+		let breakpointDetection = config.get('breakpointDetection');
+		if (!breakpointDetection) {
+			return;
+		}
+		
+		// Get the PHP versions from the configuration file
 		let phpVersions = config.get('phpVersions');
 
 		// Check if phpVersions is an array
@@ -175,8 +182,7 @@ function activate(context: vscode.ExtensionContext) {
 						}
 		
 						if (!data.includes(';' + extensionLine) && data.includes(extensionLine)) {
-							// vscode.window.showInformationMessage('Xdebug extension is already enabled for PHP ' + phpVersion);
-							// outputChannel.appendLine('Xdebug extension is already enabled for PHP ' + phpVersion);
+							outputChannel.appendLine('Xdebug extension is already enabled for PHP ' + phpVersion);
 							return resolve();
 						}
 		
@@ -192,6 +198,7 @@ function activate(context: vscode.ExtensionContext) {
 								outputChannel.appendLine('Could not modify php.ini file');
 								return reject(err);
 							}
+							outputChannel.appendLine('Xdebug extension enabled for PHP ' + phpVersion);
 							phpUpdated = true;
 							resolve();
 						});
@@ -226,7 +233,6 @@ function activate(context: vscode.ExtensionContext) {
 			});
 		
 			vscode.window.showInformationMessage('Xdebug extension enabled');
-			outputChannel.appendLine('Xdebug extension enabled');
 		};
 
 		// Function to disable Xdebug
@@ -243,8 +249,7 @@ function activate(context: vscode.ExtensionContext) {
 						}
 		
 						if (data.includes(';' + extensionLine)) {
-							// vscode.window.showInformationMessage('Xdebug extension is already disabled for PHP ' + phpVersion);
-							// outputChannel.appendLine('Xdebug extension is already disabled for PHP ' + phpVersion);
+							outputChannel.appendLine('Xdebug extension is already disabled for PHP ' + phpVersion);
 							return resolve();
 						}
 		
@@ -256,6 +261,7 @@ function activate(context: vscode.ExtensionContext) {
 								outputChannel.appendLine('Could not modify php.ini file');
 								return reject(err);
 							}
+							outputChannel.appendLine('Xdebug extension disabled for PHP ' + phpVersion);
 							phpUpdated = true;
 							resolve();
 						});
@@ -290,7 +296,6 @@ function activate(context: vscode.ExtensionContext) {
 			});
 		
 			vscode.window.showInformationMessage('Xdebug extension disabled');
-			outputChannel.appendLine('Xdebug extension disabled');
 		};
 
         const breakpoints = vscode.debug.breakpoints;
@@ -305,38 +310,26 @@ function activate(context: vscode.ExtensionContext) {
         if (phpBreakpoints.length > 0) {
 			if (!hasBreakpoints) {
 				hasBreakpoints = true;
-				// vscode.window.showInformationMessage('There are breakpoints set in PHP files.');
 				outputChannel.appendLine('Breakpoints set in PHP files.');
 				enableXdebug();
 			}
 		} else {
 			hasBreakpoints = false;
-			// vscode.window.showInformationMessage('No breakpoints set in PHP files.');
 			outputChannel.appendLine('No breakpoints set in PHP files.');
 			disableXdebug();
 		}
     };
 
+	context.subscriptions.push(enableXdebugCommand);
+	context.subscriptions.push(disableXdebugCommand);
+
 	// Register a listener for breakpoint changes
     const breakpointListener = vscode.debug.onDidChangeBreakpoints(() => {
         checkPhpBreakpoints();
     });
-
-	// Register a listener for start debug session
-	// const startDebugListener = vscode.debug.onDidStartDebugSession(() => {
-	// 	checkPhpBreakpoints();
-	// });
-
-    context.subscriptions.push(enableDisposable);
-    context.subscriptions.push(disableDisposable);
 	context.subscriptions.push(breakpointListener);
-	// context.subscriptions.push(startDebugListener);
-
-	// Check for breakpoints when the extension is activated
-	// checkPhpBreakpoints();
 }
 
-// This method is called when your extension is deactivated
 function deactivate() {}
 
 module.exports = {
