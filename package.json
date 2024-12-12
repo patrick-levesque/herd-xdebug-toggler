@@ -4,7 +4,7 @@
   "displayName": "Herd Xdebug Toggler",
   "description": "Enable or disable Xdebug extention for Laravel Herd",
   "icon": "images/herd-xdebug-toggler.png",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Patrick Levesque",
   "license": "MIT",
   "galleryBanner": {
@@ -45,21 +45,9 @@
     "configuration": {
       "title": "Herd Xdebug Toggler",
       "properties": {
-        "herdXdebugToggler.phpVersions": {
-          "type": "array",
-          "default": [
-            "7.4",
-            "8.0",
-            "8.1",
-            "8.2",
-            "8.3",
-            "8.4"
-          ],
-          "description": "PHP versions to update when enabling or disabling Xdebug"
-        },
         "herdXdebugToggler.breakpointDetection": {
           "type": "boolean",
-          "description": "Automatically enable or disable Xdebug when a breakpoint is set or removed",
+          "description": "Automatically enable/disable Xdebug when a breakpoint is set or removed",
           "default": true
         }
       }
