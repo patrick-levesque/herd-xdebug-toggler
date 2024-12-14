@@ -1,3 +1,6 @@
+### 1.1.2 - 2024-12-13
+- Update README
+
 ### 1.1.1 - 2024-12-12
 - Use current project PHP version instead of an array of PHP versions
 - Automatically checks if Xdebug is already enabled

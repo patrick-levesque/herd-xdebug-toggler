@@ -4,7 +4,7 @@
   "displayName": "Herd Xdebug Toggler",
   "description": "Enable or disable Xdebug extention for Laravel Herd",
   "icon": "images/herd-xdebug-toggler.png",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": "Patrick Levesque",
   "license": "MIT",
   "galleryBanner": {
