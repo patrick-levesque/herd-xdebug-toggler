@@ -3,191 +3,168 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as cp from 'child_process';
+import { promisify } from 'util';
 
 const homeDir = os.homedir();
 const outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
 
-const isXdebugEnabled = (): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        cp.exec('herd php -m', (err, stdout) => {
-            if (err) {
-                reject(`Error checking PHP modules: ${err.message}`);
-                return;
-            }
-            resolve(stdout.includes('xdebug'));
-        });
-    });
+const exec = promisify(cp.exec);
+const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
+
+const isXdebugEnabled = async () => {
+    try {
+        const { stdout } = await exec('herd php -m');
+        return stdout.includes('xdebug');
+    } catch (err) {
+        throw new Error(`Error checking PHP modules: ${(err as Error).message}`);
+    }
 };
 
-const getPHPVersion = (): Promise<string[]> => {
-	return new Promise((resolve, reject) => {
-		cp.exec('herd php -v', (err, stdout) => {
-			if (err) {
-				reject(`Error getting PHP version: ${err.message}`);
-				return;
-			}
-			const version = stdout.match(/PHP ([\d.]+)/);
-			if (version) {
-				resolve([version[1]]);
-			} else {
-				reject('Error getting PHP version');
-			}
-		});
-	});
+const getPHPVersion = async () => {
+    try {
+        const { stdout } = await exec('herd php -v');
+        const version = stdout.match(/PHP ([\d.]+)/);
+        if (version) {
+            return [version[1]];
+        } else {
+            throw new Error('Error getting PHP version');
+        }
+    } catch (err) {
+        throw new Error(`Error getting PHP version: ${(err as Error).message}`);
+    }
 };
 
-const restartHerd = (): Promise<void> => {
-	return new Promise((resolve, reject) => {
-		cp.exec('herd restart', (err, stdout) => {
-			const timestamp = new Date().toISOString();
-			outputChannel.appendLine('Herd Xdebug Toggler -- Restarting Herd @ ' + timestamp);
-			if (err) {
-				reject(`Error restarting Herd: ${err.message}`);
-				return;
-			}
-			outputChannel.appendLine(stdout);
-			resolve();
-		});
-	});
+const restartHerd = async () => {
+    try {
+        const { stdout } = await exec('herd restart');
+        const timestamp = new Date().toISOString();
+        outputChannel.appendLine('Restarting Herd @ ' + timestamp);
+        outputChannel.appendLine(stdout);
+    } catch (err) {
+        throw new Error(`Error restarting Herd: ${(err as Error).message}`);
+    }
 };
 
 const enableXdebug = async (showNotification: boolean = false) => {
-	const updatePhpIni = (phpVersion: string, phpIniPath: string, extensionLine: string) => {
-		return new Promise<void>((resolve, reject) => {
-			fs.readFile(phpIniPath, 'utf8', (err, data) => {
-				if (err) {
-					vscode.window.showErrorMessage('Could not find php.ini file for PHP ' + phpVersion);
-					outputChannel.appendLine('Could not find php.ini file for PHP ' + phpVersion);
-					return reject(err);
-				}
-
-				if (!data.includes(';' + extensionLine) && data.includes(extensionLine)) {
-					if (showNotification) {
-						vscode.window.showInformationMessage('Xdebug extension is already enabled for PHP ' + phpVersion);
-					}
-                    return reject('Xdebug extension is already enabled for PHP ' + phpVersion);
+    const updatePhpIni = async (phpVersion: string, phpIniPath: string, extensionLine: string) => {
+        try {
+            let data = await readFile(phpIniPath, 'utf8');
+            if (!data.includes(';' + extensionLine) && data.includes(extensionLine)) {
+                if (showNotification) {
+                    vscode.window.showInformationMessage('Xdebug extension is already enabled for PHP ' + phpVersion);
                 }
+                throw new Error('Xdebug extension is already enabled for PHP ' + phpVersion);
+            }
 
-				if (!data.includes(extensionLine)) {
-					data = extensionLine + '\n' + data;
-				} else {
-					data = data.replace(';' + extensionLine, extensionLine);
-				}
+            if (!data.includes(extensionLine)) {
+                data = extensionLine + '\n' + data;
+            } else {
+                data = data.replace(';' + extensionLine, extensionLine);
+            }
 
-				fs.writeFile(phpIniPath, data, 'utf8', err => {
-					if (err) {
-						vscode.window.showErrorMessage('Could not modify php.ini file');
-						outputChannel.appendLine('Could not modify php.ini file');
-						return reject(err);
-					}
-					outputChannel.appendLine('Xdebug extension enabled for PHP ' + phpVersion);
-					resolve();
-				});
-			});
-		});
-	};
+            await writeFile(phpIniPath, data, 'utf8');
+            outputChannel.appendLine('Xdebug extension enabled for PHP ' + phpVersion);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+				vscode.window.showErrorMessage('php.ini file not found for PHP ' + phpVersion);
+			}
+			throw err;
+        }
+    };
 
-	getPHPVersion()
-		.then(version => {
-			const phpVersionShort = version[0].split('.').slice(0, 2).join('');
-			const phpIniPath = path.join(homeDir, 'Library/Application Support/Herd/config/php/', phpVersionShort, 'php.ini');
-			const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
-			return updatePhpIni(version[0], phpIniPath, extensionLine);
-		})
-		.then(() => {
-			restartHerd()
-				.then(() => vscode.window.showInformationMessage('Xdebug extension enabled'))
-				.catch(err => outputChannel.appendLine(err));
-		})
-		.catch(err => outputChannel.appendLine(err));
+    try {
+        const version = await getPHPVersion();
+        const phpVersionShort = version[0].split('.').slice(0, 2).join('');
+        const phpIniPath = path.join(homeDir, 'Library/Application Support/Herd/config/php/', phpVersionShort, 'php.ini');
+        const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
+        await updatePhpIni(version[0], phpIniPath, extensionLine);
+        await restartHerd();
+        vscode.window.showInformationMessage('Xdebug extension enabled');
+    } catch (err) {
+        outputChannel.appendLine((err as Error).message);
+    }
 };
 
 const disableXdebug = async (showNotification: boolean = false) => {
-	const updatePhpIni = (phpVersion: string, phpIniPath: string, extensionLine: string) => {
-		return new Promise<void>((resolve, reject) => {
-			fs.readFile(phpIniPath, 'utf8', (err, data) => {
-				if (err) {
-					vscode.window.showErrorMessage('Could not find php.ini file for PHP ' + phpVersion);
-					outputChannel.appendLine('Could not find php.ini file for PHP ' + phpVersion);
-					return reject(err);
-				}
-
-				if (data.includes(';' + extensionLine)) {
-					if (showNotification) {
-						vscode.window.showInformationMessage('Xdebug extension is already disabled for PHP ' + phpVersion);
-					}
-                    return reject('Xdebug extension is already disabled for PHP ' + phpVersion);
+    const updatePhpIni = async (phpVersion: string, phpIniPath: string, extensionLine: string) => {
+        try {
+            let data = await readFile(phpIniPath, 'utf8');
+            if (data.includes(';' + extensionLine)) {
+                if (showNotification) {
+                    vscode.window.showInformationMessage('Xdebug extension is already disabled for PHP ' + phpVersion);
                 }
+                throw new Error('Xdebug extension is already disabled for PHP ' + phpVersion);
+            }
 
-				const modifiedData = data.replace(extensionLine, ';' + extensionLine);
+            if (data.includes(extensionLine)) {
+                data = data.replace(extensionLine, ';' + extensionLine);
+            }
 
-				fs.writeFile(phpIniPath, modifiedData, 'utf8', err => {
-					if (err) {
-						vscode.window.showErrorMessage('Could not modify php.ini file');
-						outputChannel.appendLine('Could not modify php.ini file');
-						return reject(err);
-					}
-					outputChannel.appendLine('Xdebug extension disabled for PHP ' + phpVersion);
-					resolve();
-				});
-			});
-		});
-	};
+            await writeFile(phpIniPath, data, 'utf8');
+            outputChannel.appendLine('Xdebug extension disabled for PHP ' + phpVersion);
+        } catch (err) {
+            if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+				vscode.window.showErrorMessage('php.ini file not found for PHP ' + phpVersion);
+			}
+			throw err;
+        }
+    };
 
-	getPHPVersion()
-		.then(version => {
-			const phpVersionShort = version[0].split('.').slice(0, 2).join('');
-			const phpIniPath = path.join(homeDir, 'Library/Application Support/Herd/config/php/', phpVersionShort, 'php.ini');
-			const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
-			return updatePhpIni(version[0], phpIniPath, extensionLine);
-		})
-		.then(() => {
-			restartHerd()
-				.then(() => vscode.window.showInformationMessage('Xdebug extension disabled'))
-				.catch(err => outputChannel.appendLine(err));
-		})
-		.catch(err => outputChannel.appendLine(err));
+    try {
+        const version = await getPHPVersion();
+        const phpVersionShort = version[0].split('.').slice(0, 2).join('');
+        const phpIniPath = path.join(homeDir, 'Library/Application Support/Herd/config/php/', phpVersionShort, 'php.ini');
+        const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
+        await updatePhpIni(version[0], phpIniPath, extensionLine);
+        await restartHerd();
+        vscode.window.showInformationMessage('Xdebug extension disabled');
+    } catch (err) {
+        outputChannel.appendLine((err as Error).message);
+    }
 };
 
-const checkPhpBreakpoints = () => {
-	const config = vscode.workspace.getConfiguration('herdXdebugToggler');
-	
-	const breakpointDetection = config.get('breakpointDetection');
-	if (!breakpointDetection) {
-		return;
-	}
+const checkPhpBreakpoints = async () => {
+    const config = vscode.workspace.getConfiguration('herdXdebugToggler');
+    
+    const breakpointDetection = config.get('breakpointDetection');
+    if (!breakpointDetection) {
+        return;
+    }
 
-	const breakpoints = vscode.debug.breakpoints;
-	const phpBreakpoints = breakpoints.filter(bp => {
-		if (bp instanceof vscode.SourceBreakpoint && bp.location?.uri) {
-			return bp.location.uri.fsPath.endsWith('.php');
-		}
-		return false;
-	});
+    const breakpoints = vscode.debug.breakpoints;
+    const phpBreakpoints = breakpoints.filter(bp => {
+        if (bp instanceof vscode.SourceBreakpoint && bp.location?.uri) {
+            return bp.location.uri.fsPath.endsWith('.php');
+        }
+        return false;
+    });
 
-	if (phpBreakpoints.length > 0) {
-		outputChannel.appendLine('Breakpoints detected in PHP files.');
-		isXdebugEnabled()
-			.then(enabled => {
-				if (enabled) {
-					outputChannel.appendLine('Xdebug is already enabled for the current project');
-				} else {
-					enableXdebug();
-				}
-			})
-			.catch(err => outputChannel.appendLine(err));
-	} else {
-		outputChannel.appendLine('No breakpoints detected in PHP files.');
-		isXdebugEnabled()
-			.then(enabled => {
-				if (enabled) {
-					disableXdebug();
-				} else {
-					outputChannel.appendLine('Xdebug is already disabled for the current project');
-				}
-			})
-			.catch(err => outputChannel.appendLine(err));
-	}
+    if (phpBreakpoints.length > 0) {
+        outputChannel.appendLine('Breakpoints detected in PHP files.');
+        try {
+            const enabled = await isXdebugEnabled();
+            if (enabled) {
+                outputChannel.appendLine('Xdebug is already enabled for the current project');
+            } else {
+                await enableXdebug();
+            }
+        } catch (err) {
+            outputChannel.appendLine((err as Error).message);
+        }
+    } else {
+        outputChannel.appendLine('No breakpoints detected in PHP files.');
+        try {
+            const enabled = await isXdebugEnabled();
+            if (enabled) {
+                await disableXdebug();
+            } else {
+                outputChannel.appendLine('Xdebug is already disabled for the current project');
+            }
+        } catch (err) {
+            outputChannel.appendLine((err as Error).message);
+        }
+    }
 };
 
 function activate(context: vscode.ExtensionContext) {
