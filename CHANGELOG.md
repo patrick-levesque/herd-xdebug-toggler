@@ -1,3 +1,7 @@
+### 1.1.3 - 2024-12-16
+- Refactor with promisify
+- Use onLanguage:php in activationEvents
+
 ### 1.1.2 - 2024-12-13
 - Update README
 
