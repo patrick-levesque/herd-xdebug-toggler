@@ -43,11 +43,29 @@
       }
     ],
     "configuration": {
+      "type": "object",
       "title": "Herd Xdebug Toggler",
       "properties": {
-        "herdXdebugToggler.breakpointDetection": {
+        "herdXdebugToggler.automaticDetection": {
+          "order": 1,
           "type": "boolean",
-          "description": "Automatically enable/disable Xdebug when a breakpoint is set or removed",
+          "description": "Automatically toggle Xdebug on breakpoint changes or debug sessions.",
+          "default": true
+        },
+        "herdXdebugToggler.detectionMode": {
+          "order": 2,
+          "markdownDescription": "Select the detection mode for toggling Xdebug. Only applies when [Automatic Detection](#herdXdebugToggler.automaticDetection) is enabled.",
+          "type": "string",
+          "enum": ["breakpointChange", "debugSession"],
+          "enumDescriptions": [
+            "Toggle Xdebug on breakpoint changes.",
+            "Toggle Xdebug on debug session start/stop."
+          ],
+          "default": "breakpointChange"
+        },
+        "herdXdebugToggler.showNotifications": {
+          "type": "boolean",
+          "description": "Show notifications when Xdebug is toggled.",
           "default": true
         }
       }
