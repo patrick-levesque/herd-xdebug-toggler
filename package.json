@@ -61,7 +61,7 @@
             "Toggle Xdebug on breakpoint changes.",
             "Toggle Xdebug on debug session start/stop."
           ],
-          "default": "breakpointChange"
+          "default": "debugSession"
         },
         "herdXdebugToggler.showNotifications": {
           "type": "boolean",
