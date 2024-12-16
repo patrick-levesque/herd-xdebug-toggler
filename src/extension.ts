@@ -46,12 +46,20 @@ const restartHerd = async () => {
     }
 };
 
-const enableXdebug = async (showNotification: boolean = false) => {
+const enableXdebug = async (mode: string = 'command') => {
+    const config = vscode.workspace.getConfiguration('herdXdebugToggler');
+
+    if (mode !== 'command' && !(config.get('automaticDetection') && config.get('detectionMode') === mode)) {
+        return;
+    }
+
+    const showNotifications = config.get('showNotifications');
+
     const updatePhpIni = async (phpVersion: string, phpIniPath: string, extensionLine: string) => {
         try {
             let data = await readFile(phpIniPath, 'utf8');
             if (!data.includes(';' + extensionLine) && data.includes(extensionLine)) {
-                if (showNotification) {
+                if (showNotifications) {
                     vscode.window.showInformationMessage('Xdebug extension is already enabled for PHP ' + phpVersion);
                 }
                 throw new Error('Xdebug extension is already enabled for PHP ' + phpVersion);
@@ -80,18 +88,28 @@ const enableXdebug = async (showNotification: boolean = false) => {
         const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
         await updatePhpIni(version[0], phpIniPath, extensionLine);
         await restartHerd();
-        vscode.window.showInformationMessage('Xdebug extension enabled');
+        if (showNotifications) {
+            vscode.window.showInformationMessage('Xdebug extension enabled');
+        }
     } catch (err) {
         outputChannel.appendLine((err as Error).message);
     }
 };
 
-const disableXdebug = async (showNotification: boolean = false) => {
+const disableXdebug = async (mode: string = 'command') => {
+    const config = vscode.workspace.getConfiguration('herdXdebugToggler');
+
+    if (mode !== 'command' && !(config.get('automaticDetection') && config.get('detectionMode') === mode)) {
+        return;
+    }
+
+    const showNotifications = config.get('showNotifications');
+
     const updatePhpIni = async (phpVersion: string, phpIniPath: string, extensionLine: string) => {
         try {
             let data = await readFile(phpIniPath, 'utf8');
             if (data.includes(';' + extensionLine)) {
-                if (showNotification) {
+                if (showNotifications) {
                     vscode.window.showInformationMessage('Xdebug extension is already disabled for PHP ' + phpVersion);
                 }
                 throw new Error('Xdebug extension is already disabled for PHP ' + phpVersion);
@@ -118,7 +136,9 @@ const disableXdebug = async (showNotification: boolean = false) => {
         const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
         await updatePhpIni(version[0], phpIniPath, extensionLine);
         await restartHerd();
-        vscode.window.showInformationMessage('Xdebug extension disabled');
+        if (showNotifications) {
+            vscode.window.showInformationMessage('Xdebug extension disabled');
+        }
     } catch (err) {
         outputChannel.appendLine((err as Error).message);
     }
@@ -126,9 +146,8 @@ const disableXdebug = async (showNotification: boolean = false) => {
 
 const checkPhpBreakpoints = async () => {
     const config = vscode.workspace.getConfiguration('herdXdebugToggler');
-    
-    const breakpointDetection = config.get('breakpointDetection');
-    if (!breakpointDetection) {
+
+    if (!(config.get('automaticDetection') && config.get('detectionMode') === 'breakpointChange')) {
         return;
     }
 
@@ -147,7 +166,7 @@ const checkPhpBreakpoints = async () => {
             if (enabled) {
                 outputChannel.appendLine('Xdebug is already enabled for the current project');
             } else {
-                await enableXdebug();
+                await enableXdebug('breakpointChange');
             }
         } catch (err) {
             outputChannel.appendLine((err as Error).message);
@@ -157,7 +176,7 @@ const checkPhpBreakpoints = async () => {
         try {
             const enabled = await isXdebugEnabled();
             if (enabled) {
-                await disableXdebug();
+                await disableXdebug('breakpointChange');
             } else {
                 outputChannel.appendLine('Xdebug is already disabled for the current project');
             }
@@ -168,20 +187,31 @@ const checkPhpBreakpoints = async () => {
 };
 
 function activate(context: vscode.ExtensionContext) {
+    
 	const enableXdebugCommand = vscode.commands.registerCommand('herd-xdebug-toggler.enableXdebug', () => {
-		enableXdebug(true);
+		enableXdebug();
 	});
 
     const disableXdebugCommand = vscode.commands.registerCommand('herd-xdebug-toggler.disableXdebug', () => {
-		disableXdebug(true);
+		disableXdebug();
 	});
-	
+
+    const startDebugListener = vscode.debug.onDidStartDebugSession(() => {
+		enableXdebug('debugSession');
+	});
+
+	const stopDebugListener = vscode.debug.onDidTerminateDebugSession(() => {
+		disableXdebug('debugSession');
+	});
+
 	const breakpointListener = vscode.debug.onDidChangeBreakpoints(() => {
 		checkPhpBreakpoints();
     });
 	
 	context.subscriptions.push(enableXdebugCommand);
 	context.subscriptions.push(disableXdebugCommand);
+    context.subscriptions.push(startDebugListener);
+    context.subscriptions.push(stopDebugListener);
 	context.subscriptions.push(breakpointListener);
 }
 
