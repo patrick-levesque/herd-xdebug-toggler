@@ -27,7 +27,7 @@
     "vscode": "^1.95.0"
   },
   "activationEvents": [
-    "onStartupFinished",
+    "onLanguage:php",
     "workspaceContains:**/artisan"
   ],
   "main": "./out/extension.js",
