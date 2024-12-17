@@ -5,8 +5,9 @@ A Visual Studio Code extension for managing Xdebug configurations in [Laravel He
 ## Features
 
 - Enable or disable the Xdebug extension for the current project's PHP version using the command palette.
-- Automatically detects breakpoint changes and toggle the Xdebug extension for the current project's PHP version.
+- Automatically detects breakpoint changes or debug sessions and toggles the Xdebug extension for the current project's PHP version.
 - Restarts Herd services seamlessly when required to apply changes.
+- Customizable detection modes: Choose between detecting breakpoint changes or debug sessions to toggle Xdebug.
 
 ## Requirements
 
@@ -22,8 +23,20 @@ xdebug.start_upon_error=yes
 
 ## Extension Settings
 
-This extension provides the following configurable setting:
+This extension provides the following configurable settings:
 
-#### Breakpoint Detection
+#### Automatic Detection
 
-Enable or disable the automatic detection of breakpoint changes. When enabled, the extension monitors breakpoints in the current workspace and automatically toggles Xdebug as needed.
+When enabled, Xdebug will be automatically toggled on breakpoint changes or debug sessions.
+
+#### Detection Mode
+
+Allows you to select the detection mode for toggling Xdebug. This setting only applies when **Automatic Detection** is enabled.
+
+- **Debug Session** (default): Enables Xdebug when a debug session is started and disables Xdebug when the debug session is stopped. This mode is more reliable as it automatically manages Xdebug activation, ensuring it is only enabled when needed.
+
+- **Breakpoint Detection**: Monitors breakpoints in the current workspace and automatically enables Xdebug when a breakpoint is added. It will disable Xdebug when all breakpoints are removed. In this mode, at least one breakpoint must be added or removed to toggle Xdebug when a project is opened.
+
+#### Show Notifications
+
+When enabled, the extension will show notifications when Xdebug is toggled (enabled/disabled). When disabled, extension logs can still be found in the Output Panel under **Herd Xdebug Toggler**.
