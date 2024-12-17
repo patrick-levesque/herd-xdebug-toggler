@@ -1,3 +1,10 @@
+### 1.2.0 - 2024-12-16
+- Add listeners for debug sessions
+- Add logic for detection mode
+- Allow to disable automatic detection
+- Allow to disable notifications
+- Set default detection mode to debug session
+
 ### 1.1.3 - 2024-12-16
 - Refactor with promisify
 - Use onLanguage:php in activationEvents
