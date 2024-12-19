@@ -1,3 +1,6 @@
+### 1.2.1 - 2024-12-18
+- Add support for Windows
+
 ### 1.2.0 - 2024-12-16
 - Add listeners for debug sessions
 - Add logic for detection mode
