@@ -8,12 +8,13 @@ A Visual Studio Code extension for managing Xdebug configurations in [Laravel He
 - Automatically detects breakpoint changes or debug sessions and toggles the Xdebug extension for the current project's PHP version.
 - Restarts Herd services seamlessly when required to apply changes.
 - Customizable detection modes: Choose between detecting breakpoint changes or debug sessions to toggle Xdebug.
+- Support for macOS and Windows.
 
 ## Requirements
 
-This extension is currently designed to work exclusively with **Laravel Herd** on macOS.
+This extension is currently designed to work exclusively with **Laravel Herd** on macOS and Windows.
 
-Its primary function is to enable or disable the **Xdebug PHP extension** in Herd's PHP configuration files. It does not automatically manage other configuration options. You will need to manually include at least the following Xdebug options in your `php.ini` files, as described in the [Herd documentation](https://herd.laravel.com/docs/1/debugging/xdebug):
+Its primary function is to enable or disable the **Xdebug PHP extension** in Herd's PHP configuration files. It does not automatically manage other configuration options. You will need to manually include at least the following Xdebug options in your `php.ini` files, as described in the Herd documentation ([macOS](https://herd.laravel.com/docs/1/debugging/xdebug) / [Windows](https://herd.laravel.com/docs/windows/advanced-usage/xdebug)):
 
 ```ini
 xdebug.mode=debug,develop
