@@ -187,6 +187,12 @@ const checkPhpBreakpoints = async () => {
 };
 
 function activate(context: vscode.ExtensionContext) {
+    const platform = os.platform();
+
+    if (platform === 'linux') {
+        vscode.window.showErrorMessage('The Herd Xdebug Toggler extension is not supported on Linux.');
+        return;
+    }
     
 	const enableXdebugCommand = vscode.commands.registerCommand('herd-xdebug-toggler.enableXdebug', () => {
 		enableXdebug();
