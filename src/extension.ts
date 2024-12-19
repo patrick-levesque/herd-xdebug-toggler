@@ -25,8 +25,8 @@ const getPHPVersion = async () => {
     try {
         const { stdout } = await exec('herd php -v');
         const version = stdout.match(/PHP ([\d.]+)/);
-        if (version) {
-            return [version[1]];
+        if (version && version[1]) {
+            return version[1];
         } else {
             throw new Error('Error getting PHP version');
         }
@@ -44,6 +44,23 @@ const restartHerd = async () => {
     } catch (err) {
         throw new Error(`Error restarting Herd: ${(err as Error).message}`);
     }
+};
+
+const getIniConfig = async (phpVersion: string) => {
+    const phpVersionShort = phpVersion.split('.').slice(0, 2).join('');
+    const phpVersionShortDot = phpVersion.split('.').slice(0, 2).join('.');
+    let phpIniPath: string;
+    let extensionLine: string;
+    
+    if (os.platform() === 'win32') {
+        phpIniPath = path.join(homeDir, '.config', 'herd', 'bin', 'php' + phpVersionShort, 'php.ini');
+        extensionLine = 'zend_extension=C:\\Program Files\\Herd\\resources\\app.asar.unpacked\\resources\\bin\\xdebug\\xdebug-' + phpVersionShortDot + '.dll';
+    } else {
+        phpIniPath = path.join(homeDir, 'Library', 'Application Support', 'Herd', 'config', 'php', phpVersionShort, 'php.ini');
+        extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
+    }
+
+    return [phpIniPath, extensionLine];
 };
 
 const enableXdebug = async (mode: string = 'command') => {
@@ -83,10 +100,11 @@ const enableXdebug = async (mode: string = 'command') => {
 
     try {
         const version = await getPHPVersion();
-        const phpVersionShort = version[0].split('.').slice(0, 2).join('');
-        const phpIniPath = path.join(homeDir, 'Library/Application Support/Herd/config/php/', phpVersionShort, 'php.ini');
-        const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
-        await updatePhpIni(version[0], phpIniPath, extensionLine);
+        const iniConfig = await getIniConfig(version);
+        const phpIniPath = iniConfig[0];
+        const extensionLine = iniConfig[1];
+
+        await updatePhpIni(version, phpIniPath, extensionLine);
         await restartHerd();
         if (showNotifications) {
             vscode.window.showInformationMessage('Xdebug extension enabled');
@@ -131,10 +149,11 @@ const disableXdebug = async (mode: string = 'command') => {
 
     try {
         const version = await getPHPVersion();
-        const phpVersionShort = version[0].split('.').slice(0, 2).join('');
-        const phpIniPath = path.join(homeDir, 'Library/Application Support/Herd/config/php/', phpVersionShort, 'php.ini');
-        const extensionLine = 'zend_extension=/Applications/Herd.app/Contents/Resources/xdebug/xdebug-' + phpVersionShort + '-arm64.so';
-        await updatePhpIni(version[0], phpIniPath, extensionLine);
+        const iniConfig = await getIniConfig(version);
+        const phpIniPath = iniConfig[0];
+        const extensionLine = iniConfig[1];
+
+        await updatePhpIni(version, phpIniPath, extensionLine);
         await restartHerd();
         if (showNotifications) {
             vscode.window.showInformationMessage('Xdebug extension disabled');
