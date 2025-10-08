@@ -13,9 +13,21 @@ const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const mkdir = promisify(fs.mkdir);
 
+const getWorkspaceRoot = () => {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        vscode.window.showErrorMessage('Please open a PHP project to enable Xdebug Detection.');
+        throw new Error('No workspace is open.');
+    }
+
+    return workspaceFolders[0].uri.fsPath;
+};
+
 const getPHPVersion = async () => {
     try {
-        const { stdout } = await exec('herd php -v');
+        const workspaceRoot = getWorkspaceRoot();
+        const { stdout } = await exec('herd php -v', { cwd: workspaceRoot });
         const version = stdout.match(/PHP ([\d.]+)/);
         if (version && version[1]) {
             return version[1];
@@ -27,9 +39,15 @@ const getPHPVersion = async () => {
     }
 };
 
-const restartHerd = async () => {
+const restartHerd = async (phpVersion: string) => {
+    const workspaceRoot = getWorkspaceRoot();
+    const phpVersionShortDot = phpVersion.split('.').slice(0, 2).join('.');
+
     try {
-        const { stdout } = await exec('herd restart');
+        const { stdout: useStdout } = await exec(`herd use ${phpVersionShortDot}`, { cwd: workspaceRoot });
+        outputChannel.appendLine(useStdout);
+
+        const { stdout } = await exec('herd restart', { cwd: workspaceRoot });
         outputChannel.appendLine(`Restarting Herd @ ${new Date().toISOString()}`);
         outputChannel.appendLine(stdout);
     } catch (err) {
@@ -55,14 +73,7 @@ const getIniConfig = async (phpVersion: string) => {
 };
 
 const getOrCreateHerdConfigPath = async () => {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-
-    if (!workspaceFolders || workspaceFolders.length === 0) {
-        vscode.window.showErrorMessage('Please open a PHP project to enable Xdebug Detection.');
-        throw new Error('No workspace is open.');
-    }
-
-    const projectRoot = workspaceFolders[0].uri.fsPath;
+    const projectRoot = getWorkspaceRoot();
     const configDir = path.join(projectRoot, '.vscode');
     const configPath = path.join(configDir, 'herd.json');
 
@@ -168,7 +179,7 @@ const enableXdebug = async (mode: string = 'command') => {
             const extensionLine = iniConfig[1];
     
             await updatePhpIni(version, phpIniPath, extensionLine);
-            await restartHerd();
+            await restartHerd(version);
             
             if (showNotifications) {
                 vscode.window.showInformationMessage('Xdebug extension enabled');
@@ -251,7 +262,7 @@ const disableXdebug = async (mode: string = 'command') => {
             const extensionLine = iniConfig[1];
     
             await updatePhpIni(version, phpIniPath, extensionLine);
-            await restartHerd();
+            await restartHerd(version);
 
             if (showNotifications) {
                 vscode.window.showInformationMessage('Xdebug extension disabled');
