@@ -1,5 +1,6 @@
 ### 1.3.0 - 2025-10-08
-- Add integration with Herd Pro Xdebug Detection (macOS only)
+- Add Herd Pro Xdebug Detection integration (macOS only)
+- Fix Herd restart to use the project's PHP version
 - Update dependencies
 - Update extension icon
 - Update README
