@@ -4,7 +4,7 @@
   "displayName": "Herd Xdebug Toggler",
   "description": "Enable or disable Xdebug extention for Laravel Herd",
   "icon": "images/herd-xdebug-toggler.png",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "author": "Patrick Levesque",
   "license": "MIT",
   "galleryBanner": {
@@ -24,7 +24,7 @@
     "xdebug"
   ],
   "engines": {
-    "vscode": "^1.95.0"
+    "vscode": "^1.104.0"
   },
   "activationEvents": [
     "onLanguage:php",
@@ -49,12 +49,12 @@
         "herdXdebugToggler.automaticDetection": {
           "order": 1,
           "type": "boolean",
-          "description": "Automatically toggle Xdebug on breakpoint changes or debug sessions.",
+          "description": "Automatically toggle Xdebug when breakpoints change or debug sessions start or stop.",
           "default": true
         },
         "herdXdebugToggler.detectionMode": {
           "order": 2,
-          "markdownDescription": "Select the detection mode for toggling Xdebug. Only applies when [Automatic Detection](#herdXdebugToggler.automaticDetection) is enabled.",
+          "markdownDescription": "Choose how Xdebug should be toggled. This setting only applies when [Automatic Detection](#herdXdebugToggler.automaticDetection) is enabled.",
           "type": "string",
           "enum": ["breakpointChange", "debugSession"],
           "enumDescriptions": [
@@ -64,9 +64,16 @@
           "default": "debugSession"
         },
         "herdXdebugToggler.showNotifications": {
+          "order": 3,
           "type": "boolean",
-          "description": "Show notifications when Xdebug is toggled.",
+          "description": "Show notifications when Xdebug is enabled or disabled.",
           "default": true
+        },
+        "herdXdebugToggler.herdPro": {
+          "order": 4,
+          "type": "boolean",
+          "markdownDescription": "Enable integration with Herd Pro [Xdebug Detection](https://herd.laravel.com/docs/macos/debugging/xdebug-detection) (**macOS only**).",
+          "default": false
         }
       }
     }
@@ -80,14 +87,14 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.95.0",
+    "@types/vscode": "^1.104.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^20.x",
-    "@typescript-eslint/eslint-plugin": "^8.17.0",
-    "@typescript-eslint/parser": "^8.17.0",
-    "eslint": "^9.16.0",
-    "typescript": "^5.7.2",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
+    "eslint": "^9.36.0",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
   }
 }
