@@ -4,17 +4,23 @@ A Visual Studio Code extension for managing Xdebug configurations in [Laravel He
 
 ## Features
 
-- Enable or disable the Xdebug extension for the current project's PHP version using the command palette.
-- Automatically detects breakpoint changes or debug sessions and toggles the Xdebug extension for the current project's PHP version.
-- Restarts Herd services seamlessly when required to apply changes.
-- Customizable detection modes: Choose between detecting breakpoint changes or debug sessions to toggle Xdebug.
-- Support for macOS and Windows.
+- Enable or disable the Xdebug extension for the current project's PHP version from the Command Palette.
+- Automatically detects active debug sessions or breakpoint changes and toggles Xdebug accordingly.
+- Restarts Herd services seamlessly when required to apply configuration changes.
+- Customizable detection modes: choose between detecting debug sessions or breakpoint changes.
+- Supports macOS and Windows.
+- Integration with Herd Pro [Xdebug Detection](https://herd.laravel.com/docs/macos/debugging/xdebug-detection) (macOS only).
+
+## Usage
+
+- Run **“Enable Xdebug”** or **“Disable Xdebug”** from the Command Palette (`⌘⇧P` / `Ctrl+Shift+P`) to enable or disable Xdebug manually.
+- When **Automatic Detection** is enabled, the extension will toggle Xdebug automatically based on your chosen detection mode.
 
 ## Requirements
 
 This extension is currently designed to work exclusively with **Laravel Herd** on macOS and Windows.
 
-Its primary function is to enable or disable the **Xdebug PHP extension** in Herd's PHP configuration files. It does not automatically manage other configuration options. You will need to manually include at least the following Xdebug options in your `php.ini` files, as described in the Herd documentation ([macOS](https://herd.laravel.com/docs/1/debugging/xdebug) / [Windows](https://herd.laravel.com/docs/windows/advanced-usage/xdebug)):
+Its primary function is to enable or disable the **Xdebug PHP extension** in Herd's PHP configuration files. It does not modify other configuration options automatically. Make sure your `php.ini` files include the following Xdebug settings (see the Herd docs for [macOS](https://herd.laravel.com/docs/macos/debugging/xdebug) / [Windows](https://herd.laravel.com/docs/windows/debugging/xdebug)):
 
 ```ini
 xdebug.mode=debug,develop
@@ -24,20 +30,22 @@ xdebug.start_upon_error=yes
 
 ## Extension Settings
 
-This extension provides the following configurable settings:
-
 #### Automatic Detection
 
-When enabled, Xdebug will be automatically toggled on breakpoint changes or debug sessions.
+When enabled, Xdebug will be toggled automatically during debug sessions or breakpoint changes.
 
 #### Detection Mode
 
-Allows you to select the detection mode for toggling Xdebug. This setting only applies when **Automatic Detection** is enabled.
+Specifies how automatic detection operates (only applies when **Automatic Detection** is enabled):
 
-- **Debug Session** (default): Enables Xdebug when a debug session is started and disables Xdebug when the debug session is stopped. This mode is more reliable as it automatically manages Xdebug activation, ensuring it is only enabled when needed.
+- **Debug Session** (default): Enables Xdebug when a debug session starts and disables it when the session ends. This mode is more reliable and ensures Xdebug is active only when needed.
 
-- **Breakpoint Detection**: Monitors breakpoints in the current workspace and automatically enables Xdebug when a breakpoint is added. It will disable Xdebug when all breakpoints are removed. In this mode, at least one breakpoint must be added or removed to toggle Xdebug when a project is opened.
+- **Breakpoint Detection**: Monitors breakpoints in the current workspace and enables Xdebug when a breakpoint is added. Xdebug is disabled when all breakpoints are removed. At least one breakpoint must be toggled to activate Xdebug after opening a project.
 
 #### Show Notifications
 
-When enabled, the extension will show notifications when Xdebug is toggled (enabled/disabled). When disabled, extension logs can still be found in the Output Panel under **Herd Xdebug Toggler**.
+When enabled, notifications appear when Xdebug is enabled or disabled. If disabled, logs remain available in the **Output → Herd Xdebug Toggler** channel.
+
+#### Herd Pro Xdebug Detection (**macOS only**)
+
+When enabled, integrates with Herd Pro [Xdebug Detection](https://herd.laravel.com/docs/macos/debugging/xdebug-detection) to automatically route requests to a PHP process with Xdebug, without requiring Xdebug to be globally enabled and Herd services to restart. Works even for embedded web applications where Xdebug browser extensions cannot be used. Requires [Herd Pro](https://herd.laravel.com/).

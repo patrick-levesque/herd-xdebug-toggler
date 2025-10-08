@@ -1,3 +1,9 @@
+### 1.3.0 - 2025-10-08
+- Add integration with Herd Pro Xdebug Detection (macOS only)
+- Update dependencies
+- Update extension icon
+- Update README
+
 ### 1.2.1 - 2024-12-18
 - Add support for Windows
 
