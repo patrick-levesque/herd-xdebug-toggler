@@ -8,7 +8,6 @@ import { promisify } from 'util';
 const homeDir = os.homedir();
 const outputChannel = vscode.window.createOutputChannel('Herd Xdebug Toggler');
 
-const exec = promisify(cp.exec);
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 const mkdir = promisify(fs.mkdir);
@@ -24,11 +23,52 @@ const getWorkspaceRoot = () => {
     return workspaceFolders[0].uri.fsPath;
 };
 
+const runHerdCommand = (args: string[], cwd: string) => {
+    return new Promise<string>((resolve, reject) => {
+        const commandLabel = `herd ${args.join(' ')}`.trim();
+        outputChannel.appendLine(`> ${commandLabel}`);
+
+        const child = cp.spawn('herd', args, {
+            cwd,
+            shell: os.platform() === 'win32',
+            windowsHide: true
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        child.stdout.on('data', data => {
+            const chunk = data.toString();
+            stdout += chunk;
+            outputChannel.append(chunk);
+        });
+
+        child.stderr.on('data', data => {
+            const chunk = data.toString();
+            stderr += chunk;
+            outputChannel.append(chunk);
+        });
+
+        child.on('error', err => {
+            reject(err);
+        });
+
+        child.on('close', code => {
+            if (code === 0) {
+                resolve((stdout || stderr).trim());
+            } else {
+                const errorMessage = stderr.trim() || `Command "${commandLabel}" exited with code ${code}`;
+                reject(new Error(errorMessage));
+            }
+        });
+    });
+};
+
 const getPHPVersion = async () => {
     try {
         const workspaceRoot = getWorkspaceRoot();
-        const { stdout } = await exec('herd php -v', { cwd: workspaceRoot });
-        const version = stdout.match(/PHP ([\d.]+)/);
+        const output = await runHerdCommand(['php', '-v'], workspaceRoot);
+        const version = output.match(/PHP ([\d.]+)/);
         if (version && version[1]) {
             return version[1];
         } else {
@@ -44,12 +84,10 @@ const restartHerd = async (phpVersion: string) => {
     const phpVersionShortDot = phpVersion.split('.').slice(0, 2).join('.');
 
     try {
-        const { stdout: useStdout } = await exec(`herd use ${phpVersionShortDot}`, { cwd: workspaceRoot });
-        outputChannel.appendLine(useStdout);
-
-        const { stdout } = await exec('herd restart', { cwd: workspaceRoot });
+        outputChannel.appendLine(`Switching Herd PHP to ${phpVersionShortDot}`);
+        await runHerdCommand(['use', phpVersionShortDot], workspaceRoot);
         outputChannel.appendLine(`Restarting Herd @ ${new Date().toISOString()}`);
-        outputChannel.appendLine(stdout);
+        await runHerdCommand(['restart'], workspaceRoot);
     } catch (err) {
         throw new Error(`Error restarting Herd: ${(err as Error).message}`);
     }

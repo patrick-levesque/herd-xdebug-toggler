@@ -1,3 +1,6 @@
+### 1.3.2 - 2025-10-09
+- Fix Herd commands output on Windows
+
 ### 1.3.1 - 2025-10-08
 - Update dependencies
 
