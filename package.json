@@ -56,7 +56,10 @@
           "order": 2,
           "markdownDescription": "Choose how Xdebug should be toggled. This setting only applies when [Automatic Detection](#herdXdebugToggler.automaticDetection) is enabled.",
           "type": "string",
-          "enum": ["breakpointChange", "debugSession"],
+          "enum": [
+            "breakpointChange",
+            "debugSession"
+          ],
           "enumDescriptions": [
             "Toggle Xdebug on breakpoint changes.",
             "Toggle Xdebug on debug session start/stop."
@@ -87,14 +90,14 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.104.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/vscode": "^1.104.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.36.0",
-    "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript": "^5.9.3"
   }
 }
